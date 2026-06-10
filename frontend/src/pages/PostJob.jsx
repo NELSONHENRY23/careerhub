@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import api from '../services/api';
 
 function PostJob() {
   const [form, setForm] = useState({
@@ -21,20 +22,9 @@ function PostJob() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:5000/api/jobs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      });
+      const res = api.post('/api/jobs', form);
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Submit job', data);
+      console.log('Job created', res.data);
 
       // Optionally reset the form after successful submit
       setForm({

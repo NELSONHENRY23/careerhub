@@ -1,10 +1,12 @@
-import { useContext, useState } from "react"
-import { AuthContext } from "../context/AuthContext"
+import { useState } from "react"
 import { api } from "../services/api"
+import { useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 function Login() {
 
-    const { login } = useContext(AuthContext);
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -13,9 +15,11 @@ function Login() {
         e.preventDefault();
 
         try {
-            const res = await api.post("/api/login", {email, password});
+            const res = await api.post("/api/auth/login", {email, password});
 
             login(res.data);
+
+            navigate("/")
         } catch (error) {
             console.log(error.response?.data || error.message);
         }

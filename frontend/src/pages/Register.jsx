@@ -1,45 +1,62 @@
-import { useState } from "react"
-import { api } from "../services/api"
+import { useState } from 'react';
+import { api } from '../services/api';
 
 function Register() {
-   
-    const [form, setForm] = useState({
-        name: "",
-        email: "",
-        password: ""
-})
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
 
-const handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prevForm) => ({
-        ...prevForm,
-        [name]: value,
-      }));
-}
+      ...prevForm,
+      [name]: value,
+    }));
+  };
 
-const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-        const res = await api.post("/auth/register", form); 
-        res.json({message: "User registered successfully, you can now login"});
-
+      const res = await api.post('/api/auth/register', form);
+      console.log(res.data);
+      alert('User registered successfully, you can now login');
     } catch (error) {
-        console.log(error.response?.data || error.message);
+      console.log(error.response?.data || error.message);
     }
-}
+  };
 
   return (
     <form onSubmit={handleSubmit}>
-    <h2>Register</h2>
+      <h2>Register</h2>
 
-    <input type="text" name="name" onChange={handleChange} placeholder="Name:" />
-    <input type="text" name="email" onChange={handleChange} placeholder="Email:" />
-    <input type="password" name="password" onChange={handleChange} placeholder="Password" />
+      <input
+        type="text"
+        name="name"
+        onChange={handleChange}
+        value={form.email}
+        placeholder="Name:"
+      />
+      <input
+        type="text"
+        name="email"
+        onChange={handleChange}
+        value={form.email}
+        placeholder="Email:"
+      />
+      <input
+        type="password"
+        name="password"
+        onChange={handleChange}
+        value={form.password}
+        placeholder="Password"
+      />
 
-    <button type="submit">Login</button> 
-</form>
-  )
+      <button type="submit">Register</button>
+    </form>
+  );
 }
 
-export default Register
+export default Register;
