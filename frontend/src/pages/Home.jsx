@@ -1,14 +1,35 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useJobs from '../hooks/useJobs';
+import useAuth from '../hooks/useAuth';
 
 function Home() {
   const { jobs, error } = useJobs();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = user?.role === 'admin';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  if (error) return <p>{error}</p>;
+  if (!jobs) return <p>Loading...</p>;
 
   return (
     <div>
       <h1>Career Hub</h1>
+      <div>
+        {isAdmin && <Link to="/post-job">Post Job</Link>}
+        <button
+          type="button"
+          onClick={handleLogout}
+          style={{ marginLeft: '1rem' }}
+        >
+          Logout
+        </button>
+      </div>
 
-      {error && <p>{error}</p>}
       <div>
         {jobs.map((job) => (
           <div key={job._id}>
