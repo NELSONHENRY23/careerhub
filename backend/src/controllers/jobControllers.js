@@ -1,13 +1,15 @@
-import { jobs } from "../data/jobs";
-
+//import { jobs } from "../data/jobs";
+import Job from "../models/Job.js";
 // get all jobs
-export const getAllJobs =  (req, res) => {
+export const getAllJobs =  async (req, res) => {
+    const jobs = await Job.find();
     res.json(jobs);
 }
 
 // get single job by id
-export const getJobById = (req, res) => {
-    const job = jobs.find(j => j.id == req.params.id);
+export const getJobById = async (req, res) => {
+    const job = await Job.findById(req.params.id);
+
     if (job) {
         res.json(job);
     } else {
@@ -17,11 +19,7 @@ export const getJobById = (req, res) => {
 
 
 // Add a new job
-export const addJob = (req, res) => {
-    const newJob = {
-        id: jobs.length + 1,
-        ...req.body
-    };
-    jobs.push(newJob);
-    res.status(201).json(newJob);
+export const addJob = async (req, res) => {
+    const job = await Job.create(req.body);
+        res.status(201).json(job);
 }
