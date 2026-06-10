@@ -8,18 +8,50 @@ export const getAllJobs =  async (req, res) => {
 
 // get single job by id
 export const getJobById = async (req, res) => {
-    const job = await Job.findById(req.params.id);
+    
+    try {
+        const {id} = req.params;
 
-    if (job) {
-        res.json(job);
-    } else {
-        res.status(404).json({ message: "Job not found" });
+        const job = await Job.findById(id);
+
+        // handle error if not found
+        if (!job) {
+            return res.status(404).json({ success: false, message: "Job not found" });
+        }else{
+            res.status(200).json({success: true, data:job});
+        } 
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          success: false,
+          message: "Server error",
+        });
     }
+  
 }
 
 
 // Add a new job
 export const addJob = async (req, res) => {
+    const { title, company, location, salary, description } = req.body;
+
+    if (!title || !company || !location || !salary || !description) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const existingJob = await Job.findOne({
+        title,
+        company,
+        location,
+      });
+  
+      if (existingJob) {
+        return res.status(409).json({
+          message: "This job already exists",
+        });
+      }
+
     const job = await Job.create(req.body);
-        res.status(201).json(job);
+        res.status(201).json({message: 'Job added successfully', job});
 }

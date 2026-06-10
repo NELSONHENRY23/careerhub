@@ -4,11 +4,13 @@ import {
   getJobById,
   addJob,
 } from '../controllers/jobControllers.js';
+import { authMiddleware } from '../middleware/authmiddleware.js';
+import { roleMiddleware } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', getAllJobs);
-router.get('/:id', getJobById);
-router.post('/', addJob);
+router.get('/',authMiddleware, getAllJobs);
+router.get('/:id',authMiddleware, getJobById);
+router.post('/',authMiddleware, roleMiddleware, addJob);
 
 export default router;
