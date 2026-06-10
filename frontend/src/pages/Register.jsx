@@ -1,8 +1,44 @@
-import React from 'react'
+import { useState } from "react"
+import { api } from "../services/api"
 
 function Register() {
+   
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        password: ""
+})
+
+const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prevForm) => ({
+        ...prevForm,
+        [name]: value,
+      }));
+}
+
+const handleSubmit = async(e) => {
+    e.preventDefault();
+
+    try {
+        const res = await api.post("/auth/register", form); 
+        res.json({message: "User registered successfully, you can now login"});
+
+    } catch (error) {
+        console.log(error.response?.data || error.message);
+    }
+}
+
   return (
-    <div>Register</div>
+    <form onSubmit={handleSubmit}>
+    <h2>Register</h2>
+
+    <input type="text" name="name" onChange={handleChange} placeholder="Name:" />
+    <input type="text" name="email" onChange={handleChange} placeholder="Email:" />
+    <input type="password" name="password" onChange={handleChange} placeholder="Password" />
+
+    <button type="submit">Login</button> 
+</form>
   )
 }
 
