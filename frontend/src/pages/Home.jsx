@@ -17,8 +17,8 @@ function Home() {
   if (!jobs) return <p>Loading...</p>;
 
   return (
-    <div>
-      <h1>Career Hub</h1>
+    <div >
+      <h1 >Career Hub</h1>
       <div>
         {isAdmin && <Link to="/post-job">Post Job</Link>}
         <button
