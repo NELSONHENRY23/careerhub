@@ -1,12 +1,16 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 function ProtectedRoute({children}) {
-    const {token} = useContext(AuthContext);
+    const {token} = useAuth();
+    const disableAuth = import.meta.env.VITE_DISABLE_AUTH === "true";
 
+    if (disableAuth) {
+      return children; // Always allow in dev
+    }
+    
     if(!token){
-        return <Navigate to="/login"/>
+        return <Navigate to="/login" replace/>
     }
 
     return children;

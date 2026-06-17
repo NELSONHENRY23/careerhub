@@ -1,85 +1,54 @@
 import { useState } from 'react';
-import api from '../services/api';
+import JobPostModal from '../components/JobPostModal';
 
 function PostJob() {
-  const [form, setForm] = useState({
-    title: '',
-    company: '',
-    location: '',
-    salary: '',
-    description: '',
-  });
+  const [showPostModal, setShowPostModal] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
-  };
+  const handleJobAdded = (newJob) => {
+    console.log('New job added:', newJob);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const res = api.post('/api/jobs', form);
-
-      console.log('Job created', res.data);
-
-      // Optionally reset the form after successful submit
-      setForm({
-        title: '',
-        company: '',
-        location: '',
-        salary: '',
-        description: '',
-      });
-    } catch (error) {
-      console.error('Failed to submit job:', error);
-    }
+    // Close modal after successfully adding job
+    setShowPostModal(false);
+    
+    // Optional: show success message or redirect later
+    // alert("Job posted successfully");
   };
 
   return (
-    <div>
-      <h1>Post a New Job</h1>
+    <div className="bg-slate-50 min-h-screen py-10">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="rounded-[40px] bg-white p-10 shadow-xl">
+          <div className="text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-blue-600">
+              Post a Job
+            </p>
+            <h1 className="mt-4 text-3xl font-bold text-slate-900">
+              Hire top talent for your company
+            </h1>
+            <p className="mt-4 max-w-2xl mx-auto text-sm leading-7 text-slate-600">
+              Fill out the job details and post an opening to attract qualified
+              candidates.
+            </p>
+          </div>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="title"
-          type="text"
-          placeholder="Title"
-          value={form.title}
-          onChange={handleChange}
-        />
-        <input
-          name="company"
-          type="text"
-          placeholder="Company"
-          value={form.company}
-          onChange={handleChange}
-        />
-        <input
-          name="location"
-          type="text"
-          placeholder="Location"
-          value={form.location}
-          onChange={handleChange}
-        />
-        <input
-          name="salary"
-          type="text"
-          placeholder="Salary"
-          value={form.salary}
-          onChange={handleChange}
-        />
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={form.description}
-          onChange={handleChange}
-        />
-        <button type="submit">Post Job</button>
-      </form>
+          <div className="mt-10">
+            <button
+            type='button'
+              onClick={() => setShowPostModal(true)}
+              className="mx-auto block rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              Create New Job Posting
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Job Post Modal */}
+      <JobPostModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onJobAdded={handleJobAdded}
+      />
     </div>
   );
 }

@@ -1,0 +1,51 @@
+export const jobCategories = [
+    {
+      title: "Software Engineering",
+      value: "Software Engineering",
+      description: "Build products used by thousands of customers.",
+      jobs: "2000+ jobs",
+      accent: "bg-blue-50 text-blue-700",
+    },
+    {
+      title: "Healthcare",
+      value: "Healthcare",
+      description: "Careers in health and medical services.",
+      jobs: "1200+ jobs",
+      accent: "bg-emerald-50 text-emerald-700",
+    },
+    {
+      title: "Finance",
+      value: "Finance",
+      description: "Leadership roles in finance and operations.",
+      jobs: "1100+ jobs",
+      accent: "bg-violet-50 text-violet-700",
+    },
+    {
+      title: "Marketing",
+      value: "Marketing",
+      description: "High-impact roles across digital marketing teams.",
+      jobs: "950+ jobs",
+      accent: "bg-rose-50 text-rose-700",
+    },
+    {
+      title: "Education",
+      value: "Education",
+      description: "Teaching, training, and academic opportunities.",
+      jobs: "800+ jobs",
+      accent: "bg-amber-50 text-amber-700",
+    },
+    {
+      title: "Engineering",
+      value: "Engineering",
+      description: "Technical engineering roles across industries.",
+      jobs: "700+ jobs",
+      accent: "bg-cyan-50 text-cyan-700",
+    },
+    {
+      title: "Other",
+      value: "Other",
+      description: "Explore more opportunities from different fields.",
+      jobs: "500+ jobs",
+      accent: "bg-slate-100 text-slate-700",
+    },
+  ];

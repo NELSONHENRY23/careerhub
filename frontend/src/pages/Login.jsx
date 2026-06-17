@@ -18,7 +18,7 @@ function Login() {
 
       login(res.data);
 
-      navigate('/');
+      navigate('/dashboard');
     } catch (error) {
       console.log(error.response?.data || error.message);
     }
