@@ -10,6 +10,7 @@ import JobDetails from './pages/JobDetails';
 import PostJob from './pages/PostJob';
 import ResumeBuilder from './pages/ResumeBuilder';
 import MyApplications from './pages/MyApplications';
+import Profile from './pages/Profile';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from './routes/AdminRoute';
@@ -22,6 +23,14 @@ function App() {
         <Route element={<MianLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/resume-builder" element={<ResumeBuilder />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={

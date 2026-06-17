@@ -43,6 +43,21 @@ export default function AuthProvider({children}){
         localStorage.setItem('token', data.token);
     }
 
+    
+    const updateUser = (updatedUser) => {
+      if (disableAuth) return;
+  
+      setUser((prevUser) => {
+        const nextUser = {
+          ...prevUser,
+          ...updatedUser,
+        };
+  
+        localStorage.setItem("user", JSON.stringify(nextUser));
+        return nextUser;
+      });
+    };
+
     const logout = () => {
         if(disableAuth) return;
         
@@ -54,7 +69,7 @@ export default function AuthProvider({children}){
     }
 
     return (
-        <AuthContext.Provider value={{user, token, login, logout}}>
+        <AuthContext.Provider value={{user, token, login, logout, updateUser}}>
             {children}
         </AuthContext.Provider>
     )

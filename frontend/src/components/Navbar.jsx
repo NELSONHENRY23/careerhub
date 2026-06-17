@@ -43,6 +43,7 @@ function Navbar() {
         Resume Builder
       </Link>
 
+
       <Link to="/#contact" className="hover:text-blue-600">
         Contact
       </Link>
@@ -72,6 +73,9 @@ function Navbar() {
           >
             Dashboard
           </Link>
+
+          <Link to="/profile"  className="rounded-full bg-slate-100 px-4 py-2 text-slate-700 hover:bg-slate-200">Profile</Link>
+
 
           {!isAdmin && (
             <Link
@@ -188,6 +192,8 @@ function Navbar() {
           >
             Dashboard
           </Link>
+
+          <Link to="/profile" onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 hover:bg-slate-100">Profile</Link>
 
           {!isAdmin && (
             <Link

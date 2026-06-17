@@ -3,68 +3,206 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 
 function Register() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setForm((prevForm) => ({
       ...prevForm,
       [name]: value,
     }));
   };
 
-  const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (form.password !== form.confirmPassword) {
+      setMessage('Passwords do not match.');
+      setMessageType('error');
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setMessage('Password must be at least 6 characters.');
+      setMessageType('error');
+      return;
+    }
+
     try {
-      const res = await api.post('/api/auth/register', form);
-      console.log(res.data);
-      alert('User registered successfully, you can now login');
-      navigate('/login');
+      setLoading(true);
+      setMessage('');
+      setMessageType('');
+
+      await api.post('/api/auth/register', {
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+
+      setMessage('Account created successfully. Redirecting to login...');
+      setMessageType('success');
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 1000);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      setMessage(error.response?.data?.message || 'Registration failed. Please try again.');
+      setMessageType('error');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <>
-    <form onSubmit={handleSubmit}>
-      <h2>Register</h2>
+    <div className="min-h-[calc(100vh-80px)] bg-slate-50 px-4 py-12">
+      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-[32px] bg-white shadow-xl lg:grid-cols-2">
+        <div className="p-8 sm:p-12">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">
+            Create account
+          </p>
 
-      <input
-        type="text"
-        name="name"
-        onChange={handleChange}
-        value={form.name}
-        placeholder="Name"
-      />
-      <input
-        type="text"
-        name="email"
-        onChange={handleChange}
-        value={form.email}
-        placeholder="Email"
-      />
-      <input
-        type="password"
-        name="password"
-        onChange={handleChange}
-        value={form.password}
-        placeholder="Password"
-      />
+          <h2 className="mt-3 text-3xl font-bold text-slate-900">
+            Join Junub Hire
+          </h2>
 
-      <button type="submit">Register</button>
-    </form>
-    <p>
-        You have an account: <Link to="/login">Sign in</Link>.
-      </p>
-</>
+          <p className="mt-2 text-sm text-slate-600">
+            Create your account to apply for jobs and build your professional profile.
+          </p>
+
+          {message && (
+            <div
+              className={`mt-6 rounded-2xl px-4 py-3 text-sm ${
+                messageType === 'success'
+                  ? 'border border-green-200 bg-green-50 text-green-700'
+                  : 'border border-red-200 bg-red-50 text-red-700'
+              }`}
+            >
+              {message}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <div>
+              <label className="text-sm font-semibold text-slate-700">
+                Full name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                placeholder="Your full name"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-slate-700">
+                Email address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                required
+                placeholder="you@example.com"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-slate-700">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                placeholder="At least 6 characters"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-slate-700">
+                Confirm password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+                placeholder="Repeat your password"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-full bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? 'Creating account...' : 'Register'}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
+              Sign in
+            </Link>
+          </p>
+        </div>
+
+        <div className="hidden bg-gradient-to-br from-slate-950 to-blue-700 p-10 text-white lg:block">
+          <p className="text-sm font-semibold uppercase tracking-[0.35em] text-blue-200">
+            Career growth
+          </p>
+
+          <h1 className="mt-8 text-4xl font-bold leading-tight">
+            Build your profile and apply with confidence.
+          </h1>
+
+          <p className="mt-4 text-blue-100">
+            Save your details, prepare your resume, and manage your job applications in one place.
+          </p>
+
+          <div className="mt-10 grid gap-4">
+            <div className="rounded-3xl bg-white/10 p-5 backdrop-blur">
+              <p className="font-semibold">Professional profile</p>
+              <p className="mt-1 text-sm text-blue-100">Keep your information ready for applications.</p>
+            </div>
+
+            <div className="rounded-3xl bg-white/10 p-5 backdrop-blur">
+              <p className="font-semibold">Resume builder</p>
+              <p className="mt-1 text-sm text-blue-100">Create and update your resume anytime.</p>
+            </div>
+
+            <div className="rounded-3xl bg-white/10 p-5 backdrop-blur">
+              <p className="font-semibold">Application tracking</p>
+              <p className="mt-1 text-sm text-blue-100">Monitor your submitted job applications.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
