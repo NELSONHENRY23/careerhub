@@ -30,7 +30,7 @@ const applicationSchema = new mongoose.Schema(
     },
     resume: {
       type: String,
-      required: true,
+      default: "",
     },
     coverLetter: {
       type: String,

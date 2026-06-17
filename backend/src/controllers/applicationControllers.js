@@ -58,6 +58,7 @@ export const createApplication = async (req, res) => {
 
     // Validate resumeId only if user selected saved resume
     let validResumeId = null;
+    let resumeUrl = resume?.trim() || "";
 
     if (resumeId) {
       const savedResume = await Resume.findOne({
@@ -73,6 +74,14 @@ export const createApplication = async (req, res) => {
       }
 
       validResumeId = savedResume._id;
+      resumeUrl = resumeUrl || savedResume.resumeUrl || "";
+    }
+
+    if (!validResumeId && !resumeUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a resume or select your saved resume",
+      });
     }
 
     // Create application only once
@@ -83,7 +92,7 @@ export const createApplication = async (req, res) => {
       fullName,
       email,
       phone,
-      resume,
+      resume: resumeUrl,
       coverLetter,
     });
 

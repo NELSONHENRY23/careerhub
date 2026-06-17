@@ -4,6 +4,17 @@ import User from '../models/User.js';
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({
+      message: "Name, email, and password are required",
+    });
+  }
+  
+  if (password.length < 6) {
+    return res.status(400).json({
+      message: "Password must be at least 6 characters",
+    });
+  }
 
   try {
     // Check if user already exists
@@ -48,12 +59,12 @@ export const login = async (req, res) => {
 
     // Create JWT token
     const token = jwt.sign(
-      { Id: user._id, role: user.role },
+      { id: user._id.toString(), role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' },
     );
     res.json({ token, user:{
-        id: user._id,
+        id: user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,

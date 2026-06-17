@@ -24,11 +24,11 @@ function ResumeBuilderModal({ isOpen, onClose }) {
   const [messageType, setMessageType] = useState("");
 
   useEffect(() => {
-    if(!open) return;
+    if(!isOpen) return;
 
     const fetchResume = async () => {
       try {
-        setLoading(true);
+        setLoadingResume(true);
 
         const response = await api.get("/api/resumes/me");
         const resume = response.data?.data;
@@ -87,7 +87,7 @@ function ResumeBuilderModal({ isOpen, onClose }) {
   const nextStep = () => {
     setMessage("");
     setMessageType("");
-    setStep((prev) => Math.max(prev -1, 1));
+    setStep((prev) => Math.min(prev + 1, 4));
   }
   const previousStep = () => {
     setMessage("");
