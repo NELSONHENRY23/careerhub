@@ -1,6 +1,9 @@
 export const roleMiddleware = (...allowedRoles) => {
   return (req, res, next) => {
-    if (process.env.DISABLE_AUTH === "true") {
+    if (
+      process.env.NODE_ENV !== "production" &&
+      process.env.DISABLE_AUTH === "true"
+    ) {
       return next();
     }
 

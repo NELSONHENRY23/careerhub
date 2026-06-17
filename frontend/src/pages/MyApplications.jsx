@@ -34,7 +34,7 @@ function MyApplications() {
   }, [token]);
 
   const handleDeleteApplication = async (applicationId) => {
-    const confirmDelete = !window.confirm('Are you sure you want to withdraw this application?');
+    const confirmDelete = window.confirm('Are you sure you want to withdraw this application?');
 
     if(!confirmDelete) return;
 

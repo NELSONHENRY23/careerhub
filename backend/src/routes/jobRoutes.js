@@ -18,7 +18,7 @@ router.delete('/:id', authMiddleware, roleMiddleware("admin"), deleteJob);
 router.put(
   '/:id',
   authMiddleware,
-  roleMiddleware,
+  roleMiddleware("admin"),
   updateJob
 );
 

@@ -86,7 +86,7 @@ const [category, setCategory] = useState(searchParams.get("category") || "");
 
     if(!confirmDelete) return;
 
-    if(token){
+    if(!token){
         alert("You must be logged in to delete a job.");
         return;
     }
