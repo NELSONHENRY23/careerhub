@@ -24,7 +24,7 @@ const JobSchema = new mongoose.Schema(
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      default: null,
+      required: true,
     },
     postedAt: { type: Date, default: Date.now },
   },
