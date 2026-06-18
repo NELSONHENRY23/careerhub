@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import sendEmail from '../utils/sendEmial.js';
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -201,3 +203,110 @@ export const changePassword = async (req, res) => {
     });
   }
 };
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const {email} = req.body;
+
+    //Always return a generic message fro security
+    const genericMessage =  "If an account with that email exists, a password reset link has been sent.";
+
+    const user = await User.findOne({email});
+
+    if(!user){
+      return res.status(200).json({
+        success: true,
+        message: genericMessage,
+      })
+    }
+
+    // Create raw reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    //Hash token before saving to database
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    await user.save();
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    const html = `
+    <h2>Password Reset Request</h2>
+    <p>You requested to reset your JunubHire password.</p>
+    <p>Click the link below to reset your password:</p>
+    <a href="${resetUrl}" target="_blank">${resetUrl}</a>
+    <p>This link will expire in 15 minutes.</p>
+    <p>If you did not request this, please ignore this email.</p>
+    `
+
+    await sendEmail({
+      to: user.email,
+      subject: "JunubHire Password Reset",
+      html,
+    })
+
+    return res.status(200).json({
+      success: true,
+      message: genericMessage,
+    })
+  } catch (error) {
+    console.error("Forgot password error", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again later.",
+    })
+  }
+}
+
+export const resetPassword = async (req, res) => {
+  try {
+    const {token} = req.params;
+    const {password} = req.body;
+
+    if(!password || password.length < 6){
+      return res.status(400).json({
+        success: false,
+        message: "Password must be atleast 6 characters long.",
+      })
+    }
+
+    const hashedToken = crypto.createHash("sha256".update(token)).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: {$gt: Date.now()},
+    })
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset link.",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    // Clear reset token so it cannot be reused
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successful. You can now log in.",
+    })
+  } catch (error) {
+    console.error("Reset password error", error);
+
+    return res.status(500).json({
+      success: false,
+      message:"Something went wrong. Please try again later.",
+    })
+  }
+}
