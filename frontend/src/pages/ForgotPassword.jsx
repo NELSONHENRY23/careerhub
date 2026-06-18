@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
 import useFeedback from "../hooks/useFeedback";
-import FeedbackAlert from "../components/Feedback";
+import FeedbackAlert from "../components/FeedbackAlert";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
