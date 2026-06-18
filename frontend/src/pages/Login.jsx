@@ -39,7 +39,9 @@ function Login() {
       login(res.data);
       navigate('/dashboard');
     } catch (error) {
-      setError(error.response?.data?.message || 'Login failed. Please try again.');
+      setError(
+        error.response?.data?.message || 'Login failed. Please try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -58,12 +60,17 @@ function Login() {
           </h1>
 
           <p className="mt-4 text-blue-100">
-            Log in to manage your applications, build your resume, and track new job opportunities.
+            Log in to manage your applications, build your resume, and track new
+            job opportunities.
           </p>
 
           <div className="mt-10 rounded-3xl bg-white/10 p-6 backdrop-blur">
-            <p className="text-sm text-blue-100">Career progress starts here.</p>
-            <p className="mt-3 text-2xl font-semibold">Find jobs. Apply smarter. Grow faster.</p>
+            <p className="text-sm text-blue-100">
+              Career progress starts here.
+            </p>
+            <p className="mt-3 text-2xl font-semibold">
+              Find jobs. Apply smarter. Grow faster.
+            </p>
           </div>
         </div>
 
@@ -117,6 +124,15 @@ function Login() {
               />
             </div>
 
+            <p className="mt-4 text-right text-sm text-slate-600">
+              <Link
+                to="/forgot-password"
+                className="font-semibold text-blue-600 hover:text-blue-700"
+              >
+                Forgot password?
+              </Link>
+            </p>
+
             <button
               type="submit"
               disabled={loading}
@@ -127,15 +143,11 @@ function Login() {
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-600">
-             Forgot your password?{' '}
-            <Link to="/forgot-password" className="font-semibold text-blue-600 hover:text-blue-700">
-              Forgot Password
-            </Link>
-          </p>
-          
-          <p className="mt-6 text-center text-sm text-slate-600">
             Don&apos;t have an account?{' '}
-            <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700">
+            <Link
+              to="/register"
+              className="font-semibold text-blue-600 hover:text-blue-700"
+            >
               Register here
             </Link>
           </p>

@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import sendEmail from '../utils/sendEmial.js';
+import sendEmail from '../utils/sendEmail.js';
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -274,7 +274,7 @@ export const resetPassword = async (req, res) => {
       })
     }
 
-    const hashedToken = crypto.createHash("sha256".update(token)).digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
