@@ -8,20 +8,25 @@ import resumeRoutes from './routes/resumeRoutes.js';
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:5137',
   process.env.FRONTEND_URL,
-].filter(Boolean);
+  'http://localhost:5173',
+  'http://localhost:5137',
+]
+  .filter(Boolean)
+  .map((origin) => origin.replace(/\/$/, ''));
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow requests with no origin, like Postman or server-to-server requests
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      const cleanedOrigin = origin.replace(/\/$/, '');
+
+      if (allowedOrigins.includes(cleanedOrigin)) {
         return callback(null, true);
       }
 
+      console.log('Blocked by CORS:', origin);
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
