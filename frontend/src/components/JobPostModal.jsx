@@ -57,16 +57,15 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
       const response = await api.post('/api/jobs', payload);
       const createdJob = response.data?.job || response.data?.data || response.data;
 
-      setMessage('Job posted successfully!');
-      setMessageType("success");
       setFormData(initialFormData);
       
       // Notify parent component so it can refresh the job list.
       if (onJobAdded) {
         onJobAdded(createdJob);
+      }else{
+        handleClose();
       }
 
-      setTimeout(() => {handleClose();}, 2000);
     } catch (error) {
       console.error(error);
       setMessage(error.response?.data?.message || 'Failed to post job. Please try again.');

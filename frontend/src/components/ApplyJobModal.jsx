@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import useAuth from "../hooks/useAuth";
 
@@ -17,6 +18,7 @@ function ApplyJobModal({ job, isOpen, onClose }) {
   const [loadingResume, setLoadingResume] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const navigate = useNavigate();
 
   const { token } = useAuth();
 
@@ -108,13 +110,8 @@ function ApplyJobModal({ job, isOpen, onClose }) {
       const response = await api.post("/api/applications", payload);
 
       if (response.status === 200 || response.status === 201) {
-        setMessage("Application submitted successfully!");
-        setMessageType("success");
         setFormData(initialFormData);
-
-        setTimeout(() => {
-          handleClose();
-        }, 1000);
+        navigate('/my-applications');
       } else {
         setMessage(
           response.data?.message ||

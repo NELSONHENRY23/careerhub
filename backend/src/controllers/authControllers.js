@@ -106,26 +106,12 @@ export const getMe = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id;
-    const { name, email } = req.body;
+    const { name } = req.body;
 
-    if (!name || !email) {
+    if (!name || !name.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Name and email are required',
-      });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const existingUser = await User.findOne({
-      email: normalizedEmail,
-      _id: { $ne: userId },
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is already in use',
+        message: 'Username is required',
       });
     }
 
@@ -133,9 +119,8 @@ export const updateProfile = async (req, res) => {
       userId,
       {
         name: name.trim(),
-        email: normalizedEmail,
       },
-      { new: true }
+      { new: true },
     ).select('-password');
 
     if (!updatedUser) {
@@ -147,7 +132,7 @@ export const updateProfile = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Profile updated successfully',
+      message: 'Username updated successfully',
       user: {
         id: updatedUser._id.toString(),
         name: updatedUser.name,

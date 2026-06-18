@@ -21,6 +21,11 @@ const JobSchema = new mongoose.Schema(
     },
     description: { type: String, required: true },
     type: { type: String, default: 'Full-time' },
+    postedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     postedAt: { type: Date, default: Date.now },
   },
   {

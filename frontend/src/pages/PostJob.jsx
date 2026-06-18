@@ -1,14 +1,17 @@
 import { useState } from 'react';
+import { useNavigate  } from 'react-router-dom';
 import JobPostModal from '../components/JobPostModal';
 
 function PostJob() {
   const [showPostModal, setShowPostModal] = useState(false);
+  const navigate = useNavigate();
 
   const handleJobAdded = (newJob) => {
     console.log('New job added:', newJob);
-
+    
     // Close modal after successfully adding job
     setShowPostModal(false);
+    navigate('/admin/jobs');
     
     // Optional: show success message or redirect later
     // alert("Job posted successfully");

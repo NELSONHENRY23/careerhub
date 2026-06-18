@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getAllJobs,
   getJobById,
+  getMyJobs,
   addJob,
   deleteJob,
   updateJob,
@@ -12,7 +13,12 @@ import { roleMiddleware } from '../middleware/roleMiddleware.js';
 const router = express.Router();
 
 router.get('/',  getAllJobs);
+
+// must come before /:id
+router.get('/my-jobs', authMiddleware, roleMiddleware('admin'), getMyJobs);
+
 router.get('/:id',  getJobById);
+
 router.post('/', authMiddleware, roleMiddleware("admin"), addJob);
 router.delete('/:id', authMiddleware, roleMiddleware("admin"), deleteJob);
 router.put(

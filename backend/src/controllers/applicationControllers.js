@@ -137,9 +137,27 @@ export const getUserApplications = async (req, res) => {
 export const getJobApplications = async (req, res) => {
   try {
     const { jobId } = req.params;
+    const userId = req.user.id || req.user._id;
+
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found',
+      });
+    }
+
+    if (!job.postedBy || job.postedBy.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only view applicants for jobs you posted',
+      });
+    }
 
     const applications = await Application.find({ jobId })
       .populate('userId', 'name email')
+      .populate('resumeId')
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -147,10 +165,10 @@ export const getJobApplications = async (req, res) => {
       data: applications,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Get job applications error',error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: 'Server error while fetching applications',
     });
   }
 };
@@ -160,21 +178,34 @@ export const updateApplicationStatus = async (req, res) => {
   try {
     const { applicationId } = req.params;
     const { status } = req.body;
-
+    const userId = req.user.id || req.user._id;
+    
     const validStatuses = ['pending', 'reviewed', 'rejected', 'accepted'];
+    
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
-    const application = await Application.findByIdAndUpdate(
-      applicationId,
-      { status },
-      { new: true },
-    );
+    const application = await Application.findById(
+      applicationId
+    ).populate('jobId');
 
     if (!application) {
       return res.status(404).json({ message: 'Application not found' });
     }
+
+    
+    const job = application.jobId;
+
+    if (!job?.postedBy || job.postedBy.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only update applications for jobs you posted',
+      });
+    }
+
+    application.status = status;
+    await application.save();
 
     res.status(200).json({
       success: true,
@@ -182,10 +213,10 @@ export const updateApplicationStatus = async (req, res) => {
       data: application,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Update application status error:',error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: 'Server error while updating status',
     });
   }
 };

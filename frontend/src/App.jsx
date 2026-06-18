@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from './routes/AdminRoute';
+import AdminJobs from './pages/AdminJobs';
 import MianLayout from './components/MianLayout';
 
 function App() {
@@ -71,6 +72,15 @@ function App() {
               </AdminRoute>
             }
           />
+
+<Route
+  path="/admin/jobs"
+  element={
+    <AdminRoute>
+      <AdminJobs />
+    </AdminRoute>
+  }
+/>
         </Route>
 
         <Route path="/login" element={<Login />} />

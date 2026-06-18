@@ -61,7 +61,6 @@ function Profile() {
   
       const res = await api.put('/api/auth/profile', {
         name: profileForm.name.trim(),
-        email: profileForm.email.trim().toLowerCase(),
       });
   
       updateUser(res.data.user);
@@ -71,11 +70,10 @@ function Profile() {
         email: res.data.user.email || '',
       });
   
-      setProfileMessage(res.data.message || 'Profile updated successfully.');
-      setProfileMessageType('success');
+      showProfileMessage(res.data.message || 'Username updated successfully.', 'success');
+
     } catch (error) {
-      setProfileMessage(error.response?.data?.message || 'Failed to update profile.');
-      setProfileMessageType('error');
+      showProfileMessage(error.response?.data?.message || 'Failed to update username.', 'error');
     } finally {
       setLoadingProfile(false);
     }
@@ -112,8 +110,7 @@ function Profile() {
         newPassword: passwordForm.newPassword,
       });
 
-      setPasswordMessage(res.data.message || 'Password changed successfully.');
-      setPasswordMessageType('success');
+      showPasswordMessage(res.data.message || 'Password changed successfully.', 'success');
 
       setPasswordForm({
         currentPassword: '',
@@ -121,13 +118,32 @@ function Profile() {
         confirmNewPassword: '',
       });
     } catch (error) {
-      setPasswordMessage(error.response?.data?.message || 'Failed to change password.');
-      setPasswordMessageType('error');
+      showPasswordMessage(error.response?.data?.message || 'Failed to change password.', 'error');
     } finally {
       setLoadingPassword(false);
     }
   };
 
+  const showProfileMessage = (text, type = 'success') => {
+    setProfileMessage(text);
+    setProfileMessageType(type);
+  
+    setTimeout(() => {
+      setProfileMessage('');
+      setProfileMessageType('');
+    }, 3000);
+  };
+  
+  const showPasswordMessage = (text, type = 'success') => {
+    setPasswordMessage(text);
+    setPasswordMessageType(type);
+  
+    setTimeout(() => {
+      setPasswordMessage('');
+      setPasswordMessageType('');
+    }, 3000);
+  };
+  
   return (
     <div className="min-h-[calc(100vh-80px)] bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-6xl">
@@ -208,12 +224,13 @@ function Profile() {
                 </label>
                 <input
                   type="email"
-                  name="email"
-                  value={profileForm.email}
-                  onChange={handleProfileChange}
-                  required
+                  value={user?.email || ''}
+                  disabled
                   className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
+                <p className="mt-1 text-xs text-slate-500">
+    Email cannot be changed from profile settings.
+  </p>
               </div>
 
               <button
