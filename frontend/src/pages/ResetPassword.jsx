@@ -14,6 +14,24 @@ const ResetPassword = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const showMessage = (text) => {
+    setMessage(text);
+    setError("");
+  
+    setTimeout(() => {
+      setMessage("");
+    }, 4000);
+  };
+  
+  const showError = (text) => {
+    setError(text);
+    setMessage("");
+  
+    setTimeout(() => {
+      setError("");
+    }, 4000);
+  };
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
@@ -21,12 +39,12 @@ const ResetPassword = () => {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      showError("Passwords do not match.");
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      showError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -37,7 +55,7 @@ const ResetPassword = () => {
         password,
       });
 
-      setMessage(res.data.message);
+      showMessage(res.data.message);
       setPassword("");
       setConfirmPassword("");
 
@@ -45,7 +63,7 @@ const ResetPassword = () => {
         navigate("/login");
       }, 1500);
     } catch (error) {
-      setError(
+      showError(
         error.response?.data?.message ||
           "Something went wrong. Please try again."
       );

@@ -8,6 +8,24 @@ const ForgotPassword = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const showMessage = (text) => {
+    setMessage(text);
+    setError("");
+  
+    setTimeout(() => {
+      setMessage("");
+    }, 4000);
+  };
+  
+  const showError = (text) => {
+    setError(text);
+    setMessage("");
+  
+    setTimeout(() => {
+      setError("");
+    }, 4000);
+  };
+
   const handleForgotPassword = async (e) => {
     e.preventDefault();
 
@@ -20,10 +38,10 @@ const ForgotPassword = () => {
         email: email.trim().toLowerCase(),
       });
 
-      setMessage(res.data.message);
+      showMessage(res.data.message);
       setEmail("");
     } catch (error) {
-      setError(
+      showError(
         error.response?.data?.message ||
           "Something went wrong. Please try again."
       );
