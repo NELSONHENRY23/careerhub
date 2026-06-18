@@ -127,6 +127,13 @@ function Login() {
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-600">
+             Forgot your password?{' '}
+            <Link to="/forgot-password" className="font-semibold text-blue-600 hover:text-blue-700">
+              Forgot Password
+            </Link>
+          </p>
+          
+          <p className="mt-6 text-center text-sm text-slate-600">
             Don&apos;t have an account?{' '}
             <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700">
               Register here
