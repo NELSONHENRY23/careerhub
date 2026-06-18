@@ -1,50 +1,31 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../services/api";
+import useFeedback from "../hooks/useFeedback";
+import FeedbackAlert from "../components/FeedbackAlert";
 
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const resetFeedback = useFeedback(4000);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
   const [loading, setLoading] = useState(false);
-
-  const showMessage = (text) => {
-    setMessage(text);
-    setError("");
-  
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
-  };
-  
-  const showError = (text) => {
-    setError(text);
-    setMessage("");
-  
-    setTimeout(() => {
-      setError("");
-    }, 4000);
-  };
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
-    setMessage("");
-    setError("");
+    resetFeedback.clearFeedback();
 
     if (password !== confirmPassword) {
-      showError("Passwords do not match.");
+      resetFeedback.showError("Passwords do not match.");
       return;
     }
 
     if (password.length < 6) {
-      showError("Password must be at least 6 characters long.");
+      resetFeedback.showError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -55,7 +36,7 @@ const ResetPassword = () => {
         password,
       });
 
-      showMessage(res.data.message);
+      resetFeedback.showSuccess(res.data.message);
       setPassword("");
       setConfirmPassword("");
 
@@ -63,7 +44,7 @@ const ResetPassword = () => {
         navigate("/login");
       }, 1500);
     } catch (error) {
-      showError(
+      resetFeedback.showError(
         error.response?.data?.message ||
           "Something went wrong. Please try again."
       );
@@ -110,17 +91,7 @@ const ResetPassword = () => {
             Enter and confirm your new password below.
           </p>
 
-          {message && (
-            <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              {message}
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+          <FeedbackAlert feedback={resetFeedback.feedback} className="mt-6"/>
 
           <form onSubmit={handleResetPassword} className="mt-8 space-y-5">
             <div>

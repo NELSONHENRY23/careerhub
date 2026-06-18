@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import useAuth from "../hooks/useAuth";
+import useFeedback from '../hooks/useFeedback';
+import FeedbackAlert from './FeedbackAlert';
 
 const initialFormData = {
   fullName: "",
@@ -12,14 +14,14 @@ const initialFormData = {
 };
 
 function ApplyJobModal({ job, isOpen, onClose }) {
+  const applyFeedback = useFeedback(4000);
+  
   const [formData, setFormData] = useState(initialFormData);
   const [savedResume, setSavedResume] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingResume, setLoadingResume] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
+ 
   const navigate = useNavigate();
-
   const { token } = useAuth();
 
   useEffect(() => {
@@ -57,8 +59,7 @@ function ApplyJobModal({ job, isOpen, onClose }) {
   const handleClose = () => {
     if (loading) return;
 
-    setMessage("");
-    setMessageType("");
+    applyFeedback.clearFeedback();
     onClose();
   };
 
@@ -73,28 +74,26 @@ function ApplyJobModal({ job, isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    applyFeedback.clearFeedback();
 
     if (!job?._id) {
-      setMessage("Job information is missing. Please try again.");
-      setMessageType("error");
+      applyFeedback.showError("Job information is missing. Please try again.");
+      
       return;
     }
 
     if (!token) {
-      setMessage("You must be logged in to apply for this job.");
-      setMessageType("error");
+      applyFeedback.showError("You must be logged in to apply for this job.");
       return;
     }
 
     if (!savedResume?._id && !formData.resume.trim()) {
-      setMessage("Please provide a resume URL or create a saved resume first.");
-      setMessageType("error");
+      applyFeedback.showError("Please provide a resume URL or create a saved resume first.");
       return;
     }
 
     setLoading(true);
-    setMessage("");
-    setMessageType("");
+  
 
     try {
       const payload = {
@@ -113,20 +112,20 @@ function ApplyJobModal({ job, isOpen, onClose }) {
         setFormData(initialFormData);
         navigate('/my-applications');
       } else {
-        setMessage(
+        applyFeedback.showError(
           response.data?.message ||
             "Failed to submit application. Please try again."
         );
-        setMessageType("error");
+       
       }
     } catch (error) {
       console.error(error);
 
-      setMessage(
+      applyFeedback.showError(
         error.response?.data?.message ||
           "An error occurred. Please try again later."
       );
-      setMessageType("error");
+   
     } finally {
       setLoading(false);
     }
@@ -250,15 +249,7 @@ function ApplyJobModal({ job, isOpen, onClose }) {
             />
           </div>
 
-          {message && (
-            <p
-              className={`text-sm ${
-                messageType === "success" ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {message}
-            </p>
-          )}
+          <FeedbackAlert feedback={applyFeedback.feedback} className="mt-3" />
 
           <div className="flex gap-4 pt-4">
             <button

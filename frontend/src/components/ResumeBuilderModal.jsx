@@ -1,70 +1,69 @@
 import { useState, useEffect } from 'react';
-import { api } from '../services/api'
+import { api } from '../services/api';
+import useFeedback from '../hooks/useFeedback';
+import FeedbackAlert from './FeedbackAlert';
 
 const initialFormData = {
-  fullName: "",
-  email: "",
-  phone: "",
-  location: "",
-  summary: "",
-  education: "",
-  experience: "",
-  skills: "",
-  portfolioUrl: "",
-  resumeUrl: "",
+  fullName: '',
+  email: '',
+  phone: '',
+  location: '',
+  summary: '',
+  education: '',
+  experience: '',
+  skills: '',
+  portfolioUrl: '',
+  resumeUrl: '',
 };
 
 function ResumeBuilderModal({ isOpen, onClose }) {
+  const resumeFeedback = useFeedback(4000);
+
   const [step, setStep] = useState(1);
   const [resumeId, setResumeId] = useState(null);
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [loadingResume, setLoadingResume] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
 
   useEffect(() => {
-    if(!isOpen) return;
+    if (!isOpen) return;
 
     const fetchResume = async () => {
       try {
         setLoadingResume(true);
 
-        const response = await api.get("/api/resumes/me");
+        const response = await api.get('/api/resumes/me');
         const resume = response.data?.data;
 
-        if(resume){
+        if (resume) {
           setResumeId(resume._id);
           setFormData({
             ...initialFormData,
-            fullName: resume.fullName || "",
-            email: resume.email || "",
-            phone: resume.phone || "",
-            location: resume.location || "",
-            summary: resume.summary || "",
-            education: resume.education || "",
-            experience: resume.experience || "",
-            skills: resume.skills || "",
-            portfolioUrl: resume.portfolioUrl || "",
-            resumeUrl: resume.resumeUrl || "",
+            fullName: resume.fullName || '',
+            email: resume.email || '',
+            phone: resume.phone || '',
+            location: resume.location || '',
+            summary: resume.summary || '',
+            education: resume.education || '',
+            experience: resume.experience || '',
+            skills: resume.skills || '',
+            portfolioUrl: resume.portfolioUrl || '',
+            resumeUrl: resume.resumeUrl || '',
           });
-        }else{
+        } else {
           setResumeId(null);
           setFormData(initialFormData);
         }
       } catch (error) {
-        console.error("Failed to load resume: ", error);
-        setMessage("Failed to load saved resume.");
-        setMessageType("error");
-        
-      }finally{
+        console.error('Failed to load resume: ', error);
+        resumeFeedback.showError('Failed to load saved resume.');
+      } finally {
         setLoadingResume(false);
       }
     };
 
     fetchResume();
   }, [isOpen]);
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,32 +75,28 @@ function ResumeBuilderModal({ isOpen, onClose }) {
   };
 
   const handleClose = () => {
-    if(loading) return;
+    if (loading) return;
 
-    setMessage('');
-    setMessageType("");
+    resumeFeedback.clearFeedback();
     setStep(1);
     onClose();
   };
 
   const nextStep = () => {
-    setMessage("");
-    setMessageType("");
+    resumeFeedback.clearFeedback();
     setStep((prev) => Math.min(prev + 1, 4));
-  }
+  };
   const previousStep = () => {
-    setMessage("");
-    setMessageType("");
+    resumeFeedback.clearFeedback();
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    resumeFeedback.clearFeedback();
 
     try {
       setLoading(true);
-      setMessage("");
-      setMessageType("");
 
       const payload = {
         fullName: formData.fullName.trim(),
@@ -114,39 +109,38 @@ function ResumeBuilderModal({ isOpen, onClose }) {
         skills: formData.skills.trim(),
         portfolioUrl: formData.portfolioUrl.trim(),
         resumeUrl: formData.resumeUrl.trim(),
-      }
-      
-      const response = resumeId ? await api.put("/api/resumes/me", payload) : await api.post("/api/resumes", payload);
-      
-      if (response.data.success){
-        setMessage(
-          resumeId ? "Resume updated successfully!" : "Resume created successfully!"
+      };
+
+      const response = resumeId
+        ? await api.put('/api/resumes/me', payload)
+        : await api.post('/api/resumes', payload);
+
+      if (response.data.success) {
+        resumeFeedback.showSuccess(
+          resumeId
+            ? 'Resume updated successfully!'
+            : 'Resume created successfully!',
         );
 
-        setMessageType("success");
-
-        if(response.data.data?._id){
+        if (response.data.data?._id) {
           setResumeId(response.data.data._id);
         }
-      }else{
-        setMessage("Failed to save resume.");
-        setMessageType("error");
+      } else {
+        resumeFeedback.showError('Failed to save resume.');
       }
     } catch (error) {
       console.error(error);
-      setMessage(
-        error.response?.data?.message || "An error occurred while saving your resume."
-      )
-
-      setMessageType("error");
-    }finally{
+      resumeFeedback.showError(
+        error.response?.data?.message ||
+          'An error occurred while saving your resume.',
+      );
+    } finally {
       setLoading(false);
     }
   };
 
   if (!isOpen) return null;
 
-  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[32px] bg-white p-8 shadow-2xl">
@@ -169,9 +163,7 @@ function ResumeBuilderModal({ isOpen, onClose }) {
             Build your professional resume
           </h2>
 
-          <p className="mt-2 text-sm text-slate-600">
-            Step {step} of 4
-          </p>
+          <p className="mt-2 text-sm text-slate-600">Step {step} of 4</p>
         </div>
 
         {loadingResume ? (
@@ -312,17 +304,10 @@ function ResumeBuilderModal({ isOpen, onClose }) {
               </>
             )}
 
-            {message && (
-              <p
-                className={`text-sm font-medium ${
-                  messageType === "success"
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {message}
-              </p>
-            )}
+            <FeedbackAlert
+              feedback={resumeFeedback.feedback}
+              className="mt-3"
+            />
 
             <div className="flex flex-wrap justify-between gap-4 pt-4">
               <div className="flex gap-3">
@@ -353,10 +338,10 @@ function ResumeBuilderModal({ isOpen, onClose }) {
                     className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                   >
                     {loading
-                      ? "Saving..."
+                      ? 'Saving...'
                       : resumeId
-                        ? "Update Resume"
-                        : "Create Resume"}
+                        ? 'Update Resume'
+                        : 'Create Resume'}
                   </button>
                 )}
               </div>
@@ -376,6 +361,5 @@ function ResumeBuilderModal({ isOpen, onClose }) {
     </div>
   );
 }
-
 
 export default ResumeBuilderModal;

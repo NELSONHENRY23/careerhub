@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { api } from '../services/api';
 import useAuth from '../hooks/useAuth';
+import useFeedback from '../hooks/useFeedback';
+import FeedbackAlert from '../components/FeedbackAlert';
 
 function Profile() {
   const { user, updateUser } = useAuth();
   const disableAuth = import.meta.env.VITE_DISABLE_AUTH === 'true';
-
+  const profileFeedback = useFeedback(3000);
+  const passwordFeedback = useFeedback(4000);
+  
   const [profileForm, setProfileForm] = useState(() => ({
     name: user?.name || '',
-    email: user?.email || '',
   }));
 
   const [passwordForm, setPasswordForm] = useState({
@@ -19,13 +22,6 @@ function Profile() {
 
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
-
-  const [profileMessage, setProfileMessage] = useState('');
-  const [profileMessageType, setProfileMessageType] = useState('');
-
-  const [passwordMessage, setPasswordMessage] = useState('');
-  const [passwordMessageType, setPasswordMessageType] = useState('');
-
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -47,33 +43,41 @@ function Profile() {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
-  
+
+    profileFeedback.clearFeedback();
+
     if (disableAuth) {
-      setProfileMessage('Profile editing is disabled while VITE_DISABLE_AUTH is true.');
-      setProfileMessageType('error');
+      profileFeedback.showError(
+        'Profile editing is disabled while VITE_DISABLE_AUTH is true.'
+      );
       return;
     }
-  
+
+    if (!profileForm.name.trim()) {
+      profileFeedback.showError('Username cannot be empty.');
+      return;
+    }
+
     try {
       setLoadingProfile(true);
-      setProfileMessage('');
-      setProfileMessageType('');
-  
+
       const res = await api.put('/api/auth/profile', {
         name: profileForm.name.trim(),
       });
-  
+
       updateUser(res.data.user);
-  
+
       setProfileForm({
         name: res.data.user.name || '',
-        email: res.data.user.email || '',
       });
-  
-      showProfileMessage(res.data.message || 'Username updated successfully.', 'success');
 
+      profileFeedback.showSuccess(
+        res.data.message || 'Username updated successfully.'
+      );
     } catch (error) {
-      showProfileMessage(error.response?.data?.message || 'Failed to update username.', 'error');
+      profileFeedback.showError(
+        error.response?.data?.message || 'Failed to update username.'
+      );
     } finally {
       setLoadingProfile(false);
     }
@@ -82,35 +86,39 @@ function Profile() {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
 
+    passwordFeedback.clearFeedback();
+
     if (disableAuth) {
-      setPasswordMessage('Password changing is disabled while VITE_DISABLE_AUTH is true.');
-      setPasswordMessageType('error');
+      passwordFeedback.showError(
+        'Password changing is disabled while VITE_DISABLE_AUTH is true.'
+      );
       return;
     }
 
     if (passwordForm.newPassword !== passwordForm.confirmNewPassword) {
-      setPasswordMessage('New passwords do not match.');
-      setPasswordMessageType('error');
+      passwordFeedback.showError('New passwords do not match.');
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      setPasswordMessage('New password must be at least 6 characters.');
-      setPasswordMessageType('error');
+      passwordFeedback.showError(
+        'New password must be at least 6 characters.'
+      );
       return;
     }
 
     try {
       setLoadingPassword(true);
-      setPasswordMessage('');
-      setPasswordMessageType('');
+     
 
       const res = await api.put('/api/auth/change-password', {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });
 
-      showPasswordMessage(res.data.message || 'Password changed successfully.', 'success');
+      passwordFeedback.showSuccess(
+        res.data.message || 'Password changed successfully.'
+      );
 
       setPasswordForm({
         currentPassword: '',
@@ -118,32 +126,14 @@ function Profile() {
         confirmNewPassword: '',
       });
     } catch (error) {
-      showPasswordMessage(error.response?.data?.message || 'Failed to change password.', 'error');
+      passwordFeedback.showError(
+        error.response?.data?.message || 'Failed to change password.'
+      );
     } finally {
       setLoadingPassword(false);
     }
   };
 
-  const showProfileMessage = (text, type = 'success') => {
-    setProfileMessage(text);
-    setProfileMessageType(type);
-  
-    setTimeout(() => {
-      setProfileMessage('');
-      setProfileMessageType('');
-    }, 3000);
-  };
-  
-  const showPasswordMessage = (text, type = 'success') => {
-    setPasswordMessage(text);
-    setPasswordMessageType(type);
-  
-    setTimeout(() => {
-      setPasswordMessage('');
-      setPasswordMessageType('');
-    }, 3000);
-  };
-  
   return (
     <div className="min-h-[calc(100vh-80px)] bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-6xl">
@@ -173,7 +163,8 @@ function Profile() {
 
         {disableAuth && (
           <div className="mt-6 rounded-3xl border border-yellow-200 bg-yellow-50 p-5 text-sm text-yellow-800">
-            You are currently using development auth mode. To test profile updates properly, set
+            You are currently using development auth mode. To test profile
+            updates properly, set
             <span className="font-semibold"> VITE_DISABLE_AUTH=false </span>
             in your frontend .env and
             <span className="font-semibold"> DISABLE_AUTH=false </span>
@@ -188,25 +179,16 @@ function Profile() {
             </h2>
 
             <p className="mt-2 text-sm text-slate-600">
-              Update your name and email address.
+              Update your username. Your email address cannot be changed from
+              profile settings.
             </p>
 
-            {profileMessage && (
-              <div
-                className={`mt-5 rounded-2xl px-4 py-3 text-sm ${
-                  profileMessageType === 'success'
-                    ? 'border border-green-200 bg-green-50 text-green-700'
-                    : 'border border-red-200 bg-red-50 text-red-700'
-                }`}
-              >
-                {profileMessage}
-              </div>
-            )}
+            <FeedbackAlert feedback={profileFeedback.feedback} />
 
             <form onSubmit={handleProfileSubmit} className="mt-6 space-y-5">
               <div>
                 <label className="text-sm font-semibold text-slate-700">
-                  Full name
+                  Username
                 </label>
                 <input
                   type="text"
@@ -226,11 +208,11 @@ function Profile() {
                   type="email"
                   value={user?.email || ''}
                   disabled
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="mt-2 w-full cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-500 outline-none"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-    Email cannot be changed from profile settings.
-  </p>
+                  Email cannot be changed from profile settings.
+                </p>
               </div>
 
               <button
@@ -252,17 +234,7 @@ function Profile() {
               Use a strong password with at least 6 characters.
             </p>
 
-            {passwordMessage && (
-              <div
-                className={`mt-5 rounded-2xl px-4 py-3 text-sm ${
-                  passwordMessageType === 'success'
-                    ? 'border border-green-200 bg-green-50 text-green-700'
-                    : 'border border-red-200 bg-red-50 text-red-700'
-                }`}
-              >
-                {passwordMessage}
-              </div>
-            )}
+            <FeedbackAlert feedback={passwordFeedback.feedback} />
 
             <form onSubmit={handlePasswordSubmit} className="mt-6 space-y-5">
               <div>

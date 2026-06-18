@@ -2,35 +2,19 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
+import useFeedback from "../hooks/useFeedback";
+import FeedbackAlert from "../components/Feedback";
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const showMessage = (text) => {
-    setMessage(text);
-    setError("");
-  
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
-  };
-  
-  const showError = (text) => {
-    setError(text);
-    setMessage("");
-  
-    setTimeout(() => {
-      setError("");
-    }, 4000);
-  };
+  const forgotFeedback = useFeedback(4000);
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
 
-    setMessage("");
-    setError("");
+    forgotFeedback.clearFeedback();
     setLoading(true);
 
     try {
@@ -38,13 +22,13 @@ const ForgotPassword = () => {
         email: email.trim().toLowerCase(),
       });
 
-      showMessage(res.data.message);
+      forgotFeedback.showSuccess(res.data.message);
       setEmail("");
     } catch (error) {
-      showError(
-        error.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
+      forgotFeedback.showError(
+           error.response?.data?.message ||
+             "Something went wrong. Please try again."
+      )
     } finally {
       setLoading(false);
     }
@@ -89,17 +73,7 @@ const ForgotPassword = () => {
             password reset link will be sent.
           </p>
 
-          {message && (
-            <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              {message}
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+          <FeedbackAlert feedback={forgotFeedback.feedback} className="mt-6"/>
 
           <form onSubmit={handleForgotPassword} className="mt-8 space-y-5">
             <div>

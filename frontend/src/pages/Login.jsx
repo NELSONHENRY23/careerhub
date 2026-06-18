@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import useAuth from '../hooks/useAuth';
+import useFeedback from '../hooks/useFeedback';
+import FeedbackAlert from '../components/FeedbackAlert';
 
 function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const loginFeedback = useFeedback(4000);
 
   const [form, setForm] = useState({
     email: '',
@@ -13,7 +17,7 @@ function Login() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,9 +31,10 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    loginFeedback.clearFeedback();
+
     try {
       setLoading(true);
-      setError('');
 
       const res = await api.post('/api/auth/login', {
         email: form.email.trim().toLowerCase(),
@@ -39,7 +44,7 @@ function Login() {
       login(res.data);
       navigate('/dashboard');
     } catch (error) {
-      setError(
+      loginFeedback.showError(
         error.response?.data?.message || 'Login failed. Please try again.',
       );
     } finally {
@@ -87,11 +92,7 @@ function Login() {
             Enter your email and password to continue.
           </p>
 
-          {error && (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+          <FeedbackAlert feedback={loginFeedback.feedback} className="mb-5" />
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>

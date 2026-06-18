@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { jobCategories } from '../data/jobCategories';
+import useFeedback from '../hooks/useFeedback';
+import FeedbackAlert from '../components/FeedbackAlert';
 
 const emptyEditForm = {
   title: '',
@@ -19,12 +21,8 @@ function AdminJobs() {
   const [editForm, setEditForm] = useState(emptyEditForm);
   const [loading, setLoading] = useState(true);
   const [loadingApplications, setLoadingApplications] = useState(false);
-  const [message, setMessage] = useState('');
 
-  const showMessage = (text) => {
-    setMessage(text);
-    setTimeout(() => setMessage(''), 3000);
-  };
+  const adminFeedback = useFeedback(3000);
 
   useEffect(() => {
     const loadMyJobs = async () => {
@@ -33,16 +31,14 @@ function AdminJobs() {
         setJobs(res.data.data || []);
       } catch (error) {
         console.error(error);
-        setMessage(error.response?.data?.message || 'Failed to load your jobs.');
-  
-        setTimeout(() => {
-          setMessage('');
-        }, 3000);
+        adminFeedback.showError(
+          error.response?.data?.message || 'Failed to load your jobs.',
+        );
       } finally {
         setLoading(false);
       }
     };
-  
+
     loadMyJobs();
   }, []);
 
@@ -56,7 +52,9 @@ function AdminJobs() {
       setApplications(res.data.data || []);
     } catch (error) {
       console.error(error);
-      showMessage(error.response?.data?.message || 'Failed to load applicants.');
+      adminFeedback.showError(
+        error.response?.data?.message || 'Failed to load applicants.',
+      );
     } finally {
       setLoadingApplications(false);
     }
@@ -97,10 +95,12 @@ function AdminJobs() {
         prev.map((job) => (job._id === updatedJob._id ? updatedJob : job)),
       );
 
-      showMessage('Job updated successfully.');
+      adminFeedback.showSuccess('Job updated successfully.');
     } catch (error) {
       console.error(error);
-      showMessage(error.response?.data?.message || 'Failed to update job.');
+      adminFeedback.showError(
+        error.response?.data?.message || 'Failed to update job.',
+      );
     }
   };
 
@@ -122,10 +122,12 @@ function AdminJobs() {
         setEditForm(emptyEditForm);
       }
 
-      showMessage('Job deleted successfully.');
+      adminFeedback.showSuccess('Job deleted successfully.');
     } catch (error) {
       console.error(error);
-      showMessage(error.response?.data?.message || 'Failed to delete job.');
+      adminFeedback.showError(
+        error.response?.data?.message || 'Failed to delete job.',
+      );
     }
   };
 
@@ -145,10 +147,12 @@ function AdminJobs() {
         ),
       );
 
-      showMessage('Application status updated.');
+      adminFeedback.showSuccess('Application status updated.');
     } catch (error) {
       console.error(error);
-      showMessage(error.response?.data?.message || 'Failed to update status.');
+      adminFeedback.showError(
+        error.response?.data?.message || 'Failed to update status.',
+      );
     }
   };
 
@@ -173,21 +177,16 @@ function AdminJobs() {
           </h1>
 
           <p className="mt-2 text-blue-100">
-            View your company jobs, update job details, delete openings, and manage applicant status.
+            View your company jobs, update job details, delete openings, and
+            manage applicant status.
           </p>
         </div>
 
-        {message && (
-          <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700">
-            {message}
-          </div>
-        )}
+        <FeedbackAlert feedback={adminFeedback.feedback} className="mt-6" />
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.2fr]">
           <section className="rounded-[32px] bg-white p-6 shadow-lg">
-            <h2 className="text-xl font-bold text-slate-900">
-              My Jobs
-            </h2>
+            <h2 className="text-xl font-bold text-slate-900">My Jobs</h2>
 
             <p className="mt-1 text-sm text-slate-600">
               {jobs.length} jobs posted by you
@@ -204,9 +203,7 @@ function AdminJobs() {
                     key={job._id}
                     className="rounded-3xl border border-slate-200 p-5"
                   >
-                    <h3 className="font-bold text-slate-900">
-                      {job.title}
-                    </h3>
+                    <h3 className="font-bold text-slate-900">{job.title}</h3>
 
                     <p className="mt-1 text-sm text-slate-600">
                       {job.company} • {job.location}
@@ -249,9 +246,7 @@ function AdminJobs() {
 
           <section className="space-y-8">
             <div className="rounded-[32px] bg-white p-6 shadow-lg">
-              <h2 className="text-xl font-bold text-slate-900">
-                Applicants
-              </h2>
+              <h2 className="text-xl font-bold text-slate-900">Applicants</h2>
 
               {!selectedJob ? (
                 <p className="mt-4 text-sm text-slate-600">
@@ -292,7 +287,10 @@ function AdminJobs() {
                         <select
                           value={application.status || 'pending'}
                           onChange={(e) =>
-                            updateApplicationStatus(application._id, e.target.value)
+                            updateApplicationStatus(
+                              application._id,
+                              e.target.value,
+                            )
                           }
                           className="rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
                         >

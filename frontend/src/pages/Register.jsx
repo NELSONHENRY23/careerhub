@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import useFeedback from '../hooks/useFeedback';
+import FeedbackAlert from '../components/FeedbackAlert';
 
 function Register() {
   const navigate = useNavigate();
+  const registerFeedback = useFeedback(4000);
 
   const [form, setForm] = useState({
     name: '',
@@ -13,9 +16,7 @@ function Register() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -28,38 +29,36 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    registerFeedback.clearFeedback();
+
     if (form.password !== form.confirmPassword) {
-      setMessage('Passwords do not match.');
-      setMessageType('error');
+      registerFeedback.showError('Passwords do not match.')
       return;
     }
 
     if (form.password.length < 6) {
-      setMessage('Password must be at least 6 characters.');
-      setMessageType('error');
+      registerFeedback.showError('Password must be at least 6 characters.');
       return;
     }
 
     try {
       setLoading(true);
-      setMessage('');
-      setMessageType('');
-
+     
       await api.post('/api/auth/register', {
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
       });
 
-      setMessage('Account created successfully. Redirecting to login...');
-      setMessageType('success');
+      registerFeedback.showSuccess('Account created successfully. Redirecting to login...');
+      
 
       setTimeout(() => {
         navigate('/login');
       }, 1000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Registration failed. Please try again.');
-      setMessageType('error');
+      registerFeedback.showError(error.response?.data?.message || 'Registration failed. Please try again.');
+     
     } finally {
       setLoading(false);
     }
@@ -81,17 +80,7 @@ function Register() {
             Create your account to apply for jobs and build your professional profile.
           </p>
 
-          {message && (
-            <div
-              className={`mt-6 rounded-2xl px-4 py-3 text-sm ${
-                messageType === 'success'
-                  ? 'border border-green-200 bg-green-50 text-green-700'
-                  : 'border border-red-200 bg-red-50 text-red-700'
-              }`}
-            >
-              {message}
-            </div>
-          )}
+          <FeedbackAlert feedback={registerFeedback.feedback}/>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>

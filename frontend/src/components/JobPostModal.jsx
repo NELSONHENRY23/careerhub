@@ -1,29 +1,30 @@
 import { useState } from 'react';
 import { api } from '../services/api';
 import { jobCategories } from '../data/jobCategories';
+import useFeedback from '../hooks/useFeedback';
+import FeedbackAlert from './FeedbackAlert';
 
 // JobPostModal allows admins to create new job postings.
 // The form captures data matching your backend Job model: title, company, location, salary, description.
 const initialFormData = {
-    title: "",
-    company: "",
-    location: "",
-    salary: "",
-    category: "Other",
-    description: "",
-  };
+  title: '',
+  company: '',
+  location: '',
+  salary: '',
+  category: 'Other',
+  description: '',
+};
 
 function JobPostModal({ isOpen, onClose, onJobAdded }) {
+  const jobPostFeedback = useFeedback(4000);
+
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState("");
 
   const handleClose = () => {
-    if(loading) return;
+    if (loading) return;
 
-    setMessage("");
-    setMessageType("");
+    jobPostFeedback.clearFeedback();
     onClose();
   };
 
@@ -37,10 +38,9 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    jobPostFeedback.clearFeedback();
 
     setLoading(true);
-    setMessage('');
-    setMessageType("");
 
     try {
       // This sends data to your backend POST /api/jobs endpoint.
@@ -53,23 +53,25 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
         category: formData.category,
         description: formData.description.trim(),
       };
-      
+
       const response = await api.post('/api/jobs', payload);
-      const createdJob = response.data?.job || response.data?.data || response.data;
+      const createdJob =
+        response.data?.job || response.data?.data || response.data;
 
       setFormData(initialFormData);
-      
+
       // Notify parent component so it can refresh the job list.
       if (onJobAdded) {
         onJobAdded(createdJob);
-      }else{
+      } else {
         handleClose();
       }
-
     } catch (error) {
       console.error(error);
-      setMessage(error.response?.data?.message || 'Failed to post job. Please try again.');
-        setMessageType("error");
+      jobPostFeedback.showError(
+        error.response?.data?.message ||
+          'Failed to post job. Please try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -82,7 +84,7 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
       <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[32px] bg-white p-8 shadow-2xl">
         {/* Close button */}
         <button
-        type="button"
+          type="button"
           onClick={handleClose}
           disabled={loading}
           className="absolute right-6 top-6 text-slate-400 hover:text-slate-900"
@@ -93,12 +95,16 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
 
         {/* Header */}
         <h2 className="text-2xl font-bold text-slate-900">Post a New Job</h2>
-        <p className="mt-2 text-sm text-slate-600">Fill in the job details below</p>
+        <p className="mt-2 text-sm text-slate-600">
+          Fill in the job details below
+        </p>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700">Job Title</label>
+            <label className="block text-sm font-medium text-slate-700">
+              Job Title
+            </label>
             <input
               type="text"
               name="title"
@@ -111,7 +117,9 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700">Company Name</label>
+            <label className="block text-sm font-medium text-slate-700">
+              Company Name
+            </label>
             <input
               type="text"
               name="company"
@@ -125,7 +133,9 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-slate-700">Location</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Location
+              </label>
               <input
                 type="text"
                 name="location"
@@ -138,7 +148,9 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700">Salary</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Salary
+              </label>
               <input
                 type="text"
                 name="salary"
@@ -151,28 +163,28 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
             </div>
           </div>
           <div>
-  <label className="block text-sm font-medium text-slate-700">
-    Category
-  </label>
+            <label className="block text-sm font-medium text-slate-700">
+              Category
+            </label>
 
-  <select
-    name="category"
-    value={formData.category}
-    onChange={handleChange}
-    required
-    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500"
-  >
-    {
-      jobCategories.map((category) => (
-
-        <option key={category.value} value={category.value}>{category.title}</option>
-      ))
-    }
-    
-  </select>
-</div>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              required
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500"
+            >
+              {jobCategories.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.title}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700">Description</label>
+            <label className="block text-sm font-medium text-slate-700">
+              Description
+            </label>
             <textarea
               name="description"
               value={formData.description}
@@ -184,15 +196,7 @@ function JobPostModal({ isOpen, onClose, onJobAdded }) {
             />
           </div>
 
-          {message && (
-            <p
-            className={`text-sm ${
-              messageType === "success" ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {message}
-          </p>
-          )}
+          <FeedbackAlert feedback={jobPostFeedback.feedback} className="mt-3" />
 
           <div className="flex gap-4 pt-4">
             <button
