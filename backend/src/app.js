@@ -7,22 +7,29 @@ import resumeRoutes from './routes/resumeRoutes.js';
 
 const app = express();
 
+const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
+
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
   'http://localhost:5137',
 ]
+  .flat()
   .filter(Boolean)
-  .map((origin) => origin.replace(/\/$/, ''));
+  .map((origin) => normalizeOrigin(origin));
+
+const isAllowedOrigin = (origin) => {
+  const cleanedOrigin = normalizeOrigin(origin);
+
+  return allowedOrigins.includes(cleanedOrigin);
+};
 
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
 
-      const cleanedOrigin = origin.replace(/\/$/, '');
-
-      if (allowedOrigins.includes(cleanedOrigin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
@@ -30,7 +37,7 @@ app.use(
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());

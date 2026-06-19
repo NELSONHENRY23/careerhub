@@ -4,6 +4,13 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import sendEmail from '../utils/sendEmail.js';
 
+const getFrontendOrigin = (req) => {
+  const configuredOrigin = process.env.FRONTEND_URL?.trim().replace(/\/$/, '');
+  const requestOrigin = req.headers.origin?.replace(/\/$/, '');
+
+  return configuredOrigin || requestOrigin || 'http://localhost:5173';
+};
+
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
@@ -247,7 +254,9 @@ export const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const frontendOrigin = getFrontendOrigin(req);
+
+    const resetUrl = `${frontendOrigin}/reset-password/${resetToken}`;
 
     const html = `
       <h2>JunubHire Password Reset</h2>
