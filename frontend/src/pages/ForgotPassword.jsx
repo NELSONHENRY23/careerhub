@@ -26,9 +26,10 @@ const ForgotPassword = () => {
       setEmail("");
     } catch (error) {
       forgotFeedback.showError(
-           error.response?.data?.message ||
-             "Something went wrong. Please try again."
-      )
+        error.code === 'ECONNABORTED'
+          ? 'Request timed out. Please try again.'
+          : error.response?.data?.message || 'Something went wrong. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
